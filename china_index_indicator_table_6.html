@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>China Index 2024 — Indicator Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#f5f4f0; --surface:#fff; --border:#dddbd4; --border-strong:#bbb9b0;
+    --text:#1a1917; --text-muted:#6b6960; --text-faint:#9c9a93; --accent:#1a1917;
+    --blue:#1d5fa8; --blue-bg:#e8f0fb; --amber:#8a5a00; --amber-bg:#fdf3dc;
+    --red:#8a2a1a; --red-bg:#fbeae6; --purple:#4a3aaa; --purple-bg:#eeedfb;
+    --green:#1a6b3a; --green-bg:#e6f5ec;
+    --bar-yes:#378ADD; --bar-no:#c8c6be; --bar-skip:#e8a830; --row-hover:#f9f8f4;
+  }
+  body { font-family:'IBM Plex Sans',sans-serif; background:var(--bg); color:var(--text); font-size:14px; line-height:1.5; min-height:100vh; }
+  header { background:var(--accent); color:#fff; padding:28px 40px 24px; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
+  .header-left h1 { font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:500; letter-spacing:-0.02em; line-height:1.2; }
+  .header-left p { font-size:13px; color:rgba(255,255,255,0.55); margin-top:5px; font-weight:300; }
+  .header-stats { display:flex; gap:32px; align-items:flex-end; }
+  .stat { text-align:right; }
+  .stat-num { font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:500; line-height:1; }
+  .stat-label { font-size:11px; color:rgba(255,255,255,0.45); margin-top:3px; text-transform:uppercase; letter-spacing:0.06em; }
+  .controls { background:var(--surface); border-bottom:1px solid var(--border); padding:14px 40px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; position:sticky; top:0; z-index:10; }
+  .controls label { font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-faint); font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+  select, input[type=text] { font-family:'IBM Plex Sans',sans-serif; font-size:13px; padding:7px 12px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text); outline:none; }
+  input[type=text] { min-width:200px; }
+  .divider { width:1px; height:24px; background:var(--border); }
+  .results-count { margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-faint); white-space:nowrap; }
+  .table-wrap { padding:24px 40px 40px; }
+  table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+  thead { background:#f0efe9; border-bottom:1px solid var(--border-strong); }
+  th { text-align:left; padding:11px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); white-space:nowrap; cursor:pointer; user-select:none; border-right:1px solid var(--border); }
+  th:last-child { border-right:none; }
+  th:hover { color:var(--text); }
+  th.sort-desc::after { content:' ↓'; color:var(--accent); }
+  th.sort-asc::after  { content:' ↑'; color:var(--accent); }
+  td { padding:10px 14px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); vertical-align:top; }
+  td:last-child { border-right:none; }
+  tr.data-row:hover td { background:var(--row-hover); cursor:pointer; }
+  tr.detail-row td { background:#fafaf7; border-bottom:1px solid var(--border); padding:12px 14px 16px 48px; }
+  tr.detail-row { display:none; }
+  tr.detail-row.open { display:table-row; }
+  .ind-id { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; white-space:nowrap; }
+  .domain-badge { display:block; font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--text-faint); margin-top:3px; }
+  .expand-btn { display:inline-block; margin-top:6px; font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--blue); cursor:pointer; border:none; background:none; padding:0; text-decoration:underline; }
+  .bar-wrap { display:flex; align-items:center; gap:3px; min-width:130px; }
+  .bar { height:9px; border-radius:2px; flex-shrink:0; }
+  .bar-yes-el { background:var(--bar-yes); }
+  .bar-no-el  { background:var(--bar-no); }
+  .bar-skip-el { background:var(--bar-skip); }
+  .bar-pct { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-muted); min-width:32px; white-space:nowrap; }
+  .skip-pct { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-faint); }
+  .tags { display:flex; flex-direction:column; gap:4px; min-width:130px; }
+  .tag { display:inline-block; padding:3px 8px; border-radius:3px; font-size:11px; font-family:'IBM Plex Mono',monospace; font-weight:500; white-space:nowrap; }
+  .tag-one-sided-no  { background:var(--red-bg);    color:var(--red);    }
+  .tag-one-sided-yes { background:var(--blue-bg);   color:var(--blue);   }
+  .tag-high-skip     { background:var(--amber-bg);  color:var(--amber);  }
+  .tag-overlap       { background:var(--purple-bg); color:var(--purple); }
+  .recommendation-tag { display:inline-block; padding:3px 8px; border-radius:3px; font-size:11px; font-family:'IBM Plex Mono',monospace; font-weight:500; white-space:nowrap; }
+  .v-maintain    { background:var(--green-bg);  color:var(--green);  }
+  .v-clarify     { background:var(--blue-bg);   color:var(--blue);   }
+  .v-remove      { background:var(--red-bg);    color:var(--red);    }
+  .v-consolidate { background:var(--purple-bg); color:var(--purple); }
+  .v-flag        { background:#f0efe9;           color:var(--text-muted); }
+  .ind-text { font-size:13px; color:var(--text); line-height:1.5; }
+  .ind-text-full { font-size:13px; color:var(--text); line-height:1.6; margin-bottom:10px; }
+  .overlap-note { display:block; margin-top:5px; font-size:11px; color:var(--purple); line-height:1.4; font-style:italic; }
+  .notes-block { font-size:12px; color:var(--text-muted); line-height:1.6; border-left:2px solid var(--border-strong); padding-left:10px; margin-top:4px; }
+  .detail-label { font-size:10px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-faint); margin-bottom:4px; margin-top:10px; }
+  .detail-label:first-child { margin-top:0; }
+  .legend { display:flex; gap:16px; align-items:center; padding:12px 40px 16px; flex-wrap:wrap; border-bottom:1px solid var(--border); background:var(--surface); }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted); }
+  .legend-dot { width:10px; height:9px; border-radius:2px; flex-shrink:0; }
+  .legend-sep { width:1px; height:14px; background:var(--border); }
+  .empty-state { text-align:center; padding:48px 24px; color:var(--text-faint); font-size:13px; }
+  .empty-state span { display:block; font-family:'IBM Plex Mono',monospace; font-size:24px; margin-bottom:8px; color:var(--border-strong); }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <h1>China Index 2024<br>Indicator Summary</h1>
+    <p>Doublethink Lab &middot; 2026 Cycle Review</p>
+  </div>
+  <div class="header-stats">
+    <div class="stat"><div class="stat-num">99</div><div class="stat-label">Indicators</div></div>
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">Domains</div></div>
+    <div class="stat"><div class="stat-num">101</div><div class="stat-label">Countries</div></div>
+  </div>
+</header>
+<div class="controls">
+  <label>Domain</label>
+  <select id="fDomain">
+    <option value="">All domains</option>
+    <option>Media</option><option>Foreign Policy</option><option>Academia</option>
+    <option>Military</option><option>Domestic Politics</option><option>Economy</option>
+    <option>Technology</option><option>Society</option><option>Law Enforcement</option>
+  </select>
+  <div class="divider"></div>
+  <label>Recommendation</label>
+  <select id="fRecommendation">
+    <option value="">All recommendations</option>
+    <option value="Maintain">Maintain</option>
+    <option value="Maintain with clarification">Needs clarification</option>
+    <option value="Consider removing">Consider removing</option>
+    <option value="Consider consolidating">Consider consolidating</option>
+    <option value="Flag for committee">Flag for committee</option>
+  </select>
+  <div class="divider"></div>
+  <label>Flag</label>
+  <select id="fFlag">
+    <option value="">All flags</option>
+    <option value="one-sided-no">One-sided No</option>
+    <option value="one-sided-yes">One-sided Yes</option>
+    <option value="high-skip">High skip</option>
+    <option value="overlap">Possible overlap</option>
+  </select>
+  <div class="divider"></div>
+  <input type="text" id="fSearch" placeholder="Search indicators...">
+  <div class="results-count" id="resultsCount">99 indicators</div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--bar-yes)"></div>Yes</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--bar-no)"></div>No</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--bar-skip)"></div>Skip</div>
+  <div class="legend-sep"></div>
+  <div class="legend-item"><span class="recommendation-tag v-maintain" style="font-size:10px;">Maintain</span></div>
+  <div class="legend-item"><span class="recommendation-tag v-clarify" style="font-size:10px;">Needs clarification</span></div>
+  <div class="legend-item"><span class="recommendation-tag v-remove" style="font-size:10px;">Consider removing</span></div>
+  <div class="legend-item"><span class="recommendation-tag v-consolidate" style="font-size:10px;">Consider consolidating</span></div>
+  <div class="legend-item"><span class="recommendation-tag v-flag" style="font-size:10px;">Flag for committee</span></div>
+  <div class="legend-sep"></div>
+  <div class="legend-item"><span class="tag tag-one-sided-yes" style="font-size:10px;">One-sided Yes</span>&gt;80%</div>
+  <div class="legend-item"><span class="tag tag-one-sided-no" style="font-size:10px;">One-sided No</span>&gt;80%</div>
+  <div class="legend-item"><span class="tag tag-high-skip" style="font-size:10px;">High skip</span>&gt;3%</div>
+  <div class="legend-item"><span class="tag tag-overlap" style="font-size:10px;">Overlap</span></div>
+  <div class="legend-sep"></div>
+  <div class="legend-item" style="font-size:11px;color:var(--text-faint);">Click any row to expand full wording + notes</div>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th data-col="id">ID</th>
+        <th data-col="yes" class="sort-desc">Yes / No</th>
+        <th data-col="skip">Skip</th>
+        <th data-col="recommendation">Recommendation</th>
+        <th data-col="flags">Flags</th>
+        <th>Indicator</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+<script>
+const rows = [
+{id:"MED1",domain:"Media",yes:37,no:64,skip:0,total:101,text:"In my country, there are media organizations that belong to the World Chinese Media (世界华文媒体) network.",recommendation:"Maintain",notes:"Distribution is healthy: mostly \"No,\" but enough variation. System-level, highly verifiable. Captures formal organizational alignment, not content. Stable across time → good for comparability."},
+{id:"MED2",domain:"Media",yes:51,no:48,skip:2,total:101,text:"In my country, there are journalists or media organizations which are members of the Belt and Road Media Cooperation Alliance/Union, the Belt and Road News Alliance, or other Belt and Road media networks that connected to PRC (e.g. Belt and Road Media Community, Belt and Road Journalists Network, Belt and Road News Network, or B&R TV Networks).",recommendation:"Maintain with clarification",notes:"Very even split → strong comparative value. System-level membership = good verifiability. Slight risk in the future of being too expansive as BRI branding proliferates. Respondents might confused BRI media networks with other BRI related networks. We might wanna add clarifications in \"Additional Remarks\" column.",overlap:["MED7"],overlapNote:"Overlaps with MED7 — both capture structural media ties; distinction is formal network membership vs. active content agreement"},
+{id:"MED3",domain:"Media",yes:75,no:22,skip:4,total:101,text:"In my country, journalists, media organizations, or online influencers have participated in international travel organized by PRC state-owned media or PRC-connected entities.",recommendation:"Maintain",notes:"High Yes rate is expected — this is a widespread tactic. Distribution across 1–4 is good (not all \"4\"). Skip rate low → partners can document this.",overlap:["ACA7", "DOM3"],overlapNote:"Overlaps with ACA7 (scholar trips) and DOM3 (politician trips) — same travel mechanism across sectors"},
+{id:"MED4",domain:"Media",yes:51,no:50,skip:0,total:101,text:"In my country, there are journalists, media organizations or online influencers who have received trainings from PRC state-owned media or PRC-connected entities.",recommendation:"Maintain",notes:"Very clean distribution. Distinct from travel (deeper influence channel). No skip issues, good case evidence."},
+{id:"MED5",domain:"Media",yes:73,no:28,skip:0,total:101,text:"In my country, PRC state-media (including print, radio, and video) is broadcasted or distributed in a local language. [See Additional Remark]",recommendation:"Maintain",notes:"High Yes, but still meaningful variation (not all 4s). System-level → excellent comparability. This is a baseline exposure indicator, not alignment."},
+{id:"MED6",domain:"Media",yes:38,no:63,skip:0,total:101,text:"In my country, there are local media outlets wholly or majority owned by PRC-connected individuals or entities, or media owners who have significant business interests in the PRC.",recommendation:"Maintain",notes:"Healthy No-heavy distribution. System-level ownership = high evidentiary bar (good)."},
+{id:"MED7",domain:"Media",yes:76,no:25,skip:0,total:101,text:"In my country, media outlets have delivered content provided by PRC state-funded media, or under content-sharing agreements with PRC state-funded media. [See Additional Remark]",recommendation:"Maintain with clarification",notes:"Very high Yes, but still graded well across 1–4. Case-based evidence still manageable. Conceptually important (propaganda pipeline). Could converge with Media 5 if guidance isn't clear. Need to make sure partners clearly distinguish: distribution (#5) vs. editorial integration (#7).",overlap:["MED2"],overlapNote:"Overlaps with MED2 — distinction is formal network membership vs. active content agreement"},
+{id:"MED8",domain:"Media",yes:39,no:59,skip:3,total:101,text:"In my country, local newspapers, online news websites, content farms, or social media platforms receive economic support by regularly featuring advertisements from PRC-connected entities.",recommendation:"Maintain",notes:"Skip slightly higher than most Media indicators. This remains hard to prove in opaque countries, but it's not an indicator design flaw. Still analytically valuable (money → incentives)."},
+{id:"MED9",domain:"Media",yes:31,no:69,skip:1,total:101,text:"In my country, there are journalists who have had pressure exerted on them by the PRC, including (but not limited to) public denunciation, revocation of journalist ID, denial of visa, lawsuits, or threat thereof.",recommendation:"Maintain",notes:"Low Yes is expected. Simple Yes–No is appropriate (grading would be misleading). Conceptually crucial."},
+{id:"MED10",domain:"Media",yes:59,no:41,skip:1,total:101,text:"In my country, there are media organizations that describe relations with the PRC as based on friendship, brotherhood, or otherwise use emotive language that refers to the relationship in familial terms.",recommendation:"Maintain",notes:"Strong uptake for a new indicator. Case-based, but very observable. Nicely replaces the old censorship indicator."},
+{id:"MED11",domain:"Media",yes:38,no:62,skip:1,total:101,text:"In my country, there are media personalities (including reporters, journalists or commentators) or celebrities who echo PRC talking points, such as denying the existence of or whitewashing human rights abuses (e.g. a media personality who rejects that there are re-education camps for Uyghurs in Xinjiang).",recommendation:"Maintain with clarification",notes:"Balanced distribution. Clear narrative-alignment logic. Works across regions. Do we need another example, like: describing the PRC's political system as superior or more suitable than democratic systems or repeating PRC official claims that foreign criticism of China is \"anti-China,\" \"politically motivated,\" or \"interference in internal affairs\"."},
+{id:"FOR1",domain:"Foreign Policy",yes:74,no:25,skip:2,total:101,text:"My country’s legislature has a joint parliamentary friendship group, committee or other forms of sub-organizations with PRC. [See Additional Remark]",recommendation:"Maintain with clarification",notes:"Very high \"Yes,\" but expected as many countries have such groups. System-level, easy to verify. Captures institutionalized legislative ties, not rhetoric. The existing \"Additional Remarks\", \"Although in some countries, parliamentary structure does not allow for such groups or committees, we still consider this indicator as important. \"Joint parliamentary friendship group\" means joint as PRC and ta"},
+{id:"FOR2",domain:"Foreign Policy",yes:64,no:37,skip:0,total:101,text:"My country receives foreign aid or significant in-kind donations from the PRC.",recommendation:"Maintain",notes:"Strong variation across intensity. Very clear concept. High policy relevance (aid → leverage). Evidence usually public and easy to find."},
+{id:"FOR3",domain:"Foreign Policy",yes:50,no:50,skip:1,total:101,text:"The PRC provides training to diplomats or civil servants on governance from my country (such as at 国家行政学院 or 中央党校).",recommendation:"Maintain",notes:"Excellent distribution. Clear examples (国家行政学院 / 中央党校) anchor the concept. Distinct from generic exchanges."},
+{id:"FOR4",domain:"Foreign Policy",yes:17,no:84,skip:0,total:101,text:"Citizens of my country have been detained in the PRC or denied exit for political reasons, a.k.a. “hostage diplomacy.”",recommendation:"Maintain",notes:"Low \"Yes,\" but expected. Conceptually very strong. Yes-No is perfect for this indicator."},
+{id:"FOR5",domain:"Foreign Policy",yes:26,no:71,skip:4,total:101,text:"In my country, politicians or government officials participate in events or projects affiliated with the China Council for International Cooperation on Environment and Development (CCICED, 中国环境与发展国际合作委员会).",recommendation:"Maintain with clarification",notes:"Moderate \"Yes,\" acceptable. Clear, named institution → good verifiability. Slightly higher skip suggests some partners unsure or lack info. Suggest to have an explantion at the \"Additional Remarks\" column: This indicator applies only to formal and documented participation in activities, events, or projects affiliated with the China Council for International Cooperation on Environment and Developme"},
+{id:"FOR6",domain:"Foreign Policy",yes:75,no:26,skip:0,total:101,text:"My country has signed an agreement with the PRC to classify their diplomatic relationship as a \"Strategic Partnership\" or beyond. [See Additional Remark]",recommendation:"Maintain with clarification",notes:"High \"Yes,\" but this reflects PRC diplomacy reality. Clear, document-based indicator. Very stable over time → excellent for comparability. The existing Additional Remarks, for non-native English speakers, is a bit long, indirect, and slightly confusing."},
+{id:"FOR7",domain:"Foreign Policy",yes:69,no:29,skip:3,total:101,text:"My country unquestionably uses PRC’s \"one China principle\" which articulates that Taiwan is an inalienable part of China, rather than my country's own \"one China policy.\"  [See Additional Remark]",recommendation:"Maintain with clarification",notes:"Conceptually strong and politically important. Distinction between policy vs principle is crucial. Skip rate suggests this is hard to interpret, not hard to verify. Existing clarification is too long, too academic, and too indirect for a answering guide, especially for non-native English speakers. Proposed rewrite: The PRC's \"one China principle\" states that there is only one sovereign China, that"},
+{id:"FOR8",domain:"Foreign Policy",yes:80,no:21,skip:0,total:101,text:"My government has supported, remained silent about, or opposed the PRC's territorial claims (such as on the South China Sea arbitration ruling issued by the UNCLOS Arbitral Tribunal in July 2016); except claims over Taiwan, which are indirectly covered in indicator 7.",recommendation:"Flag for committee",notes:"\"Silent\" category is doing important work. Strong comparative value. Clear reference point (UNCLOS 2016 ruling)."},
+{id:"FOR9",domain:"Foreign Policy",yes:70,no:30,skip:1,total:101,text:"My government has supported, remained silent about, or opposed the PRC's treatment, governance, or policy towards the Uyghur population in Xinjiang.",recommendation:"Flag for committee",notes:"Balanced distribution. Clear issue framing. Comparable across regions."},
+{id:"FOR10",domain:"Foreign Policy",yes:79,no:20,skip:2,total:101,text:"My government has supported, remained silent about, or opposed the PRC's treatment, governance, or policy toward the Tibet population.",recommendation:"Flag for committee",notes:"High \"Silent\" is expected, still meaningful variation. Conceptually aligned with FP 9 and FP 11."},
+{id:"FOR11",domain:"Foreign Policy",yes:76,no:25,skip:0,total:101,text:"My government has supported, remained silent about, or opposed the PRC's ongoing repression in Hong Kong, such as the imposition of the National Security Law or other actions to persecute Hong Kong protestors or activists.",recommendation:"Flag for committee",notes:"Very healthy distribution. Clear policy relevance. Works well as a trio with FP 9 and FP 10."},
+{id:"ACA1",domain:"Academia",yes:94,no:7,skip:0,total:101,text:"In my country, universities have established research partnerships with PRC-connected entities. (e.g. Huawei, Tencent or Alibaba)",recommendation:"Consider consolidating",notes:"Very high \"Yes,\" but expected in a globalized research environment. Strong system-level evidence (MOUs, joint labs, funded projects). Clear examples (Huawei, Tencent, Alibaba) help anchoring."},
+{id:"ACA2",domain:"Academia",yes:94,no:7,skip:0,total:101,text:"In my country, there are Confucius Institutes/Classrooms or other PRC-affiliated Chinese language centers based at universities. [See Additional Remark]",recommendation:"Consider consolidating",notes:"Very high \"Yes,\" but conceptually important. Excellent comparability across cycles. The existing additional remarks is a bit confusing and hard to follow. Proposed additional remarks: Some Confucius Institutes and similar Chinese language centers have changed names or branding but remain affiliated with PRC or CCP institutions. This indicator includes Confucius Institutes and any Chinese language "},
+{id:"ACA3",domain:"Academia",yes:42,no:58,skip:1,total:101,text:"My country plans to include, or does include, Chinese as a foreign language in K12 or primary education, and receives free or subsidized (e.g. offered below market price) educational books and teachers from PRC.",recommendation:"Maintain with clarification",notes:"Clear split; good variation. Strong system-level verifiability (curricula, agreements). Distinct from university-level indicators. K12 is an U.S.- style term, and many countries may not use this term. We can maintain this indicator without rewording the indicator by adding an additional remark. Suggested additional remark:"},
+{id:"ACA4",domain:"Academia",yes:53,no:48,skip:0,total:101,text:"In my country, one or more think tanks and academic research centers belong to PRC-affiliated networks/associations (such as: the Silk Road Think Tank Association, Silk Road Think Tank Network [SiLKS], Belt and Road Studies Network, University Alliance of the Silk Road, University Consortium of the 21st Century Maritime Silk Road).",recommendation:"Maintain",notes:"Healthy distribution. Named examples anchor the concept well. Captures networked influence, not funding or speech. Optional additional remarks for clarification: This indicator refers to formal membership or affiliation with PRC-affiliated academic or think tank networks. One-time event participation or informal cooperation should not be counted."},
+{id:"ACA5",domain:"Academia",yes:64,no:30,skip:7,total:101,text:"In my country, think tanks and academic research centers have received financial benefits from PRC-connected individuals or entities, such as through grants, donations, sponsored exchange programs, or fellowship programs at PRC institutions.",recommendation:"Maintain",notes:"Strong concept; captures material leverage. Slightly higher skip suggests documentation difficulty in some countries. Evidence might be opaque in certain countries."},
+{id:"ACA6",domain:"Academia",yes:47,no:54,skip:0,total:101,text:"In my country, experts participate in PRC talent recruitment programs such as the Thousand Talents Program or Changjiang Scholars program.",recommendation:"Maintain",notes:"Balanced distribution. Clear, named programs anchor scope. Good comparability across regions."},
+{id:"ACA7",domain:"Academia",yes:64,no:31,skip:6,total:101,text:"In my country, scholars have taken trips to the PRC or to other countries organized or run by PRC-connected individuals or entities.",recommendation:"Maintain with clarification",notes:"Similar logic to Media travel indicator. Skip rate acceptable for a case-based indicator. Respondents may hesitate: 1. Does a conference in a third country count? (I know the indicator did mention about \"to other countries,\" but some respondents may sitll miss this point.)",overlap:["MED3", "DOM3"],overlapNote:"Overlaps with MED3 (journalist trips) and DOM3 (politician trips) — same travel mechanism across sectors"},
+{id:"ACA8",domain:"Academia",yes:13,no:88,skip:0,total:101,text:"In my country, organized PRC-connected student groups, such as Chinese Students and Scholars Associations (CSSAs), are involved in attempts to censor staff or students (e.g. by harassing students protesting human rights abuses in the PRC, or formally complaining about the identification of Taiwan as a country in lecture slides).",recommendation:"Maintain",notes:"Low \"Yes,\" but expected. Captures a very specific, serious phenomenon."},
+{id:"ACA9",domain:"Academia",yes:11,no:89,skip:1,total:101,text:"In my country, scholars or academics have been pressured after expressing opinions or producing scholarship that is critical of the PRC, including via visa denials for PRC travel, workplace censure, lawsuits, legal challenges, or threats thereof.",recommendation:"Maintain",notes:"Very rare, but extremely important. Clear parallels with Media pressure indicator. (Scholars vs Journalists)"},
+{id:"ACA10",domain:"Academia",yes:29,no:70,skip:2,total:101,text:"In my country, PRC-connected entities have been involved in school or university curriculum design, such as courses about East Asian history, modern politics, etc.",recommendation:"Maintain",notes:"Clear, serious indicator. Evidence usually available via curricula or agreements. Simple Yes–No is appropriate."},
+{id:"ACA11",domain:"Academia",yes:32,no:67,skip:2,total:101,text:"In my country, scholars have published articles that echo PRC talking points, such as denying the existence of or whitewashing human rights abuses (e.g. an academic who rejects that there are re-education camps for Uyghurs in Xinjiang).",recommendation:"Maintain",notes:"Complements Media narrative-alignment indicators."},
+{id:"MIL1",domain:"Military",yes:59,no:42,skip:0,total:101,text:"My country currently imports (or receives in-kind donation of) military or law-enforcement equipment or components of equipment from the PRC.",recommendation:"Maintain",notes:"Clear, observable behavior. Includes both purchase and donation → good coverage. Case-based evidence is appropriate."},
+{id:"MIL2",domain:"Military",yes:45,no:56,skip:0,total:101,text:"My country’s government has participated in one or more multilateral security dialogues organized by the PRC (e.g. China-Africa Peace and Security Forum; the Conference on Interaction & Confidence Building Measures in Asia).",recommendation:"Maintain",notes:"Named examples (China–Africa Peace and Security Forum, CICA) anchor it clearly. Captures agenda-setting rather than equipment or training."},
+{id:"MIL3",domain:"Military",yes:20,no:81,skip:0,total:101,text:"My country co-develops or co-produces military or law-enforcement equipment with the PRC (including arrangements where PLA-affiliated professionals work in domestic labs researching dual-use technologies).",recommendation:"Maintain",notes:"Rare, but that's expected. Sentinel indicator."},
+{id:"MIL4",domain:"Military",yes:14,no:86,skip:1,total:101,text:"In my country, there are reports that the PRC has expressed intentions or has taken actions to establish basing.",recommendation:"Maintain",notes:"Very rare but extremely important. Includes intent, not just completed bases → future-proof. Strong strategic relevance."},
+{id:"MIL5",domain:"Military",yes:17,no:83,skip:1,total:101,text:"In my country, the People’s Liberation Army (PLA) has participated in a humanitarian relief/disaster assistance (HADR) effort. [See Additional Remark]",recommendation:"Maintain with clarification",notes:"Many respondents cite non-PLA related activities: COVID-19 vaccine donations, medical aid from PRC embassies, civilian emergency supplies."},
+{id:"MIL6",domain:"Military",yes:8,no:92,skip:1,total:101,text:"In my country, People’s Liberation Army (PLA) military personnel are permanently or rotationally deployed (excluding defense attaches and peacekeepers).",recommendation:"Maintain",notes:"Extremely rare, and that's correct. Exclusions are explicit and important."},
+{id:"MIL7",domain:"Military",yes:44,no:55,skip:2,total:101,text:"In my country, military professionals have participated in military education or training programs provided by the PRC.",recommendation:"Maintain",notes:"Good balance. System-level evidence is usually available. Minor confusion between training and exercises (Military 11) might happen."},
+{id:"MIL8",domain:"Military",yes:44,no:54,skip:3,total:101,text:"In my country, senior military or civilian defense leaders have participated in bilateral meetings with PLA officers at or above the one-star rank.",recommendation:"Maintain with clarification",notes:"We need to tell the respondents what evidence is acceptable, emphasize the \"one-star\" requirement and explicitly tell them to check the rank of the officer(s) involved, which usually can be found on the internet, and not to make any assumptions. Additional remarks should clearly state the requirements for this indicator: This indicator applies only to bilateral meetings involving senior PLA office"},
+{id:"MIL9",domain:"Military",yes:10,no:83,skip:8,total:101,text:"In my country, high-ranking retired or current military and/or intelligence officers have received direct or deferred benefits from PRC-connected individuals or entities openly or covertly (e.g. have been appointed to lucrative positions as board members or consultants with PRC-invested firms, casinos, energy companies, etc.) during or in retirement from public service.",recommendation:"Maintain",notes:"Sensitive but important. Higher skip reflects opacity, not confusion. Evidence hard in opaque countries, but that's acceptable. Captures elite capture risk."},
+{id:"MIL10",domain:"Military",yes:27,no:70,skip:4,total:101,text:"In my country, high-ranking retired or current military and/or intelligence officials publicly advocate for friendly foreign policy or military cooperation with the PRC.",recommendation:"Maintain",notes:"Clear parallel with Media / Academia advocacy indicators. Public statements are verifiable."},
+{id:"MIL11",domain:"Military",yes:35,no:66,skip:0,total:101,text:"My country cooperates with the People’s Liberation Army (PLA) on military exchange exercises, including drills and war games.",recommendation:"Maintain",notes:"Clear and classic military cooperation indicator. Distinct from training and dialogue. System-level documentation is common."},
+{id:"DOM1",domain:"Domestic Politics",yes:70,no:30,skip:1,total:101,text:"In my country, politicians or government employees at the sub-national level are signing agreements with the PRC government or state-owned enterprises. [See Additional Remark]",recommendation:"Maintain",notes:"Still very relevant: city/province MOUs remain a core PRC influence channel. Data spread is healthy. System evidence is appropriate. Suggest to reword the additional remarks to make it more straight forward: This indicator focuses on partnerships involving sub-national authorities, such as cities or provinces. When a national government signs an agreement on behalf of a local government, this shou"},
+{id:"DOM2",domain:"Domestic Politics",yes:95,no:6,skip:0,total:101,text:"In my country, local municipalities or provinces have sister-city or sister-province ties (友好城市) with municipalities or provinces in the PRC.",recommendation:"Consider removing",notes:"Extremely common globally and still politically meaningful. High \"Yes\" rate is expected, not a flaw. Captures institutionalized relationships, not rhetoric. This is an important baseline indicator, like DP1."},
+{id:"DOM3",domain:"Domestic Politics",yes:47,no:48,skip:6,total:101,text:"In my country, politicians or government employees have taken trips to the PRC paid for by PRC-connected individuals or entities.",recommendation:"Maintain with clarification",notes:"Classic influence pathway. Case-based evidence fits. No sign of obsolescence. Risk:",overlap:["MED3", "ACA7"],overlapNote:"Overlaps with MED3 (journalist trips) and ACA7 (scholar trips) — same travel mechanism across sectors"},
+{id:"DOM4",domain:"Domestic Politics",yes:67,no:34,skip:0,total:101,text:"In my country, politicians or government employees at the local (non-national) level visit the PRC and meet with PRC officials and think tanks.",recommendation:"Maintain",notes:"Complements DP3 nicely (who pays vs who hosts). but it is important that respondents do not mixed these two up. Still very current."},
+{id:"DOM5",domain:"Domestic Politics",yes:68,no:30,skip:3,total:101,text:"Representatives of a political party in my country’s national legislature have been invited to visit the PRC or attended events hosted by the International Department of the Chinese Communist Party (中共中央对外联络部), including World Political Parties Summits, CPC in Dialogue with World Political Parties High-Level Meetings, BRICS Political Parties Dialogues, Think Tanks and Civil Society Organizations Fora, etc.",recommendation:"Maintain",notes:"Strong indicator of political-party channel influence. ID-CCP remains one of the most active foreign political engagement organs. Examples are all current. Question: Should we add more examples, such as the Global Development Initiative, Global Civilization Initiative, and China–[Region] Political Parties Dialogues?"},
+{id:"DOM6",domain:"Domestic Politics",yes:20,no:80,skip:1,total:101,text:"In my country, there are reports of politicians or political parties receiving campaign finance or significant in-kind donations from PRC-connected entities or individuals.",recommendation:"Maintain",notes:"Rare, but extremely important. Low \"Yes\" + very low skip → people understand it, just that evidence is usually hard to find."},
+{id:"DOM7",domain:"Domestic Politics",yes:17,no:82,skip:2,total:101,text:"In my country, groups with reported links to the United Front Work Department (UFWD) have hosted fundraisings or have provided other forms of support for government employees, politicians or parties.",recommendation:"Maintain",notes:"Still one of the most relevant political-influence mechanisms. Evidence is sensitive but conceptually rock-solid. Case logic is right."},
+{id:"DOM8",domain:"Domestic Politics",yes:25,no:75,skip:1,total:101,text:"PRC officials or PRC state-media have criticized, harassed, or threatened local politicians, local government officials, or political parties in my country due to their activities, statements or policy advocacy.",recommendation:"Maintain",notes:"Clear parallel with Media & Academia pressure indicators. Captures coercion, not cooperation."},
+{id:"DOM9",domain:"Domestic Politics",yes:69,no:31,skip:1,total:101,text:"In my country, politicians or government employees have publicly echoed PRC talking points (e.g. denying PRC human rights issues, arguing that the PRC’s one-party political system could be beneficial for my country’s economic growth).",recommendation:"Maintain",notes:"Covers narrative alignment at elite level. Examples are current and transferable across regions."},
+{id:"DOM10",domain:"Domestic Politics",yes:38,no:60,skip:3,total:101,text:"In my country, politicians or government employees have received direct or deferred benefits from PRC-connected individuals or entities openly or covertly (e.g. have been appointed to lucrative positions as board members or consultants with PRC-invested firms, casinos, energy companies, etc.) during or in retirement from public office.",recommendation:"Maintain",notes:"Mirrors Military 9. Good cross-domain consistency. Captures elite capture risks.",overlap:["DOM3"],overlapNote:"Overlaps with DOM3 (PRC-paid trips) — trips may be counted as deferred benefits if not clearly separated in guidance"},
+{id:"DOM11",domain:"Domestic Politics",yes:21,no:74,skip:6,total:101,text:"In my country, officials, political parties, and political elites try to suppress criticism of the PRC.",recommendation:"Maintain",notes:"Important indicator Captures gatekeeping behavior inside political systems. Still rare, but that's expected."},
+{id:"ECO1",domain:"Economy",yes:39,no:62,skip:0,total:101,text:"The PRC is my country's number one trading partner (for trade in goods only).",recommendation:"Maintain",notes:"Very clear, objective, system-level. Not about influence by itself, but economic weight. Very good baseline indicator."},
+{id:"ECO2",domain:"Economy",yes:20,no:76,skip:5,total:101,text:"PRC-connected entities own more than 25% of my country’s bilateral sovereign debt.",recommendation:"Maintain",notes:"Much better than old 50% threshold. Rare but meaningful. Debt data is opaque in some countries. Propose to have a simple explanation on \"bilateral soverign debt.\""},
+{id:"ECO3",domain:"Economy",yes:29,no:72,skip:0,total:101,text:"The PRC is the top customer for my country’s extractive industries. [See Additional Remark]",recommendation:"Maintain",notes:"Sector-specific dependence, very meaningful. Some partners may struggle with sector data, but skip = 0, so fine. Existing additional remarks is a bit hard and heavy for readers. I suggest to revise it so that the remarks can be cleaner, and more friendly for non-native speakers: For this indicator, \"extractive industries\" refer only to activities that involve the extraction of raw materials from t"},
+{id:"ECO4",domain:"Economy",yes:63,no:38,skip:0,total:101,text:"In my country, PRC-related entities own, operate or substantially control critical infrastructure (e.g. ports, power plants, digital data centers, etc) or sensitive sectors (biotech, raw materials, etc.)",recommendation:"Maintain",notes:"Core economy indicators. High relevance, very current. Clear influence logic. Existing examples are strong."},
+{id:"ECO5",domain:"Economy",yes:71,no:30,skip:0,total:101,text:"My country joined (or applied to join) the Asian Infrastructure Investment Bank (AIIB).",recommendation:"Consider removing",notes:"Easy to verify. High Yes rate, but that reflects reality. Captures institutional economic alignment."},
+{id:"ECO6",domain:"Economy",yes:38,no:62,skip:1,total:101,text:"In my country, major businesses are members of the Silk Road Chamber of International Commerce, or of the Belt and Road Industrial and Commercial Alliance, or of the Belt and Road General Chamber of Commerce.",recommendation:"Maintain",notes:"Good proxy for elite commercial engagement. Similar logic to Media's BRI network indicators. There is a risk that respondents may confuse this with other groups. Proposed to add clear guidance in the additional remarks: This indicator applies only to formal and documented membership in the listed PRC-linked business chambers or alliances. Participation in one-off business forums, trade fairs, or i"},
+{id:"ECO7",domain:"Economy",yes:30,no:69,skip:2,total:101,text:"In my country, financial institutions use the China Cross-Border Interbank Payment System (CIPS) clearing and settlement services system.",recommendation:"Maintain",notes:"Important financial infrastructure signal. Some respondents may confuse CIPS with SWIFT or general RMB use. I propose to add clear definition in remarks: This indicator refers specifically to the use of the China Cross-Border Interbank Payment System (CIPS) for international clearing and settlement. Do not include the general use of the Chinese yuan (RMB), trade invoicing in RMB, or transactions c"},
+{id:"ECO8",domain:"Economy",yes:15,no:86,skip:0,total:101,text:"My country has been the target of PRC economic coercion (e.g. trade/investment sanctions, boycotts) after the government, private companies, or NGOs made statements or introduced policies deemed unfavorable to the PRC.",recommendation:"Maintain",notes:"Low Yes, but expected. Important indicator."},
+{id:"ECO9",domain:"Economy",yes:41,no:60,skip:0,total:101,text:"My country has free-trade agreement(s) with the PRC (either bilateral or as part of regional agreement(s)) that primarily deals with trade in goods or services, including digital goods or services.",recommendation:"Maintain",notes:"Good for long-term comparison."},
+{id:"ECO10",domain:"Economy",yes:39,no:61,skip:1,total:101,text:"In my country, central or local governments have relaxed or removed regulatory restrictions, or have established special economic zones (or free trade zones, industrial parks, etc.) to attract investments or economic participation from the PRC. [See Additional Remark]",recommendation:"Maintain",notes:"Good for long-term comparison. However, we need to emphasize that this indicator refers to countries establishing special economic zones specifically to attract PRC investors, not to all foreign investors. Propose the revision of our current addtional remarks: This indicator applies only to regulatory changes or special economic zones that have been formally implemented to attract investment or ec"},
+{id:"ECO11",domain:"Economy",yes:4,no:97,skip:0,total:101,text:"My country has undergone a default or restructuring of a public debt arrangement with PRC-affiliated financial entities, which may have involved the transfer of my country's land or infrastructure in exchange for debt forgiveness.",recommendation:"Maintain",notes:"Extremely rare, but very high impact and very policy-relevant."},
+{id:"TEC1",domain:"Technology",yes:38,no:62,skip:1,total:101,text:"In my country, PRC-connected entities (such as China Mobile, China Unicom or China Telecom) or their subsidiaries provide telecom services.",recommendation:"Maintain with clarification",notes:"This is one of those indicators where s small wording gap creates big confusion. I proposed to fix it in the additional remarks: This indicator refers to PRC-connected telecom companies or their subsidiaries that formally operate telecom services within the country, such as holding a local license, running network infrastructure, or providing services directly to domestic users. It does not includ"},
+{id:"TEC2",domain:"Technology",yes:83,no:17,skip:1,total:101,text:"In my country, telecoms have signed agreements to adopt hardwares or technical specifications of 4G or 5G cellular networks that are produced or developed by Huawei, ZTE or other PRC enterprises.",recommendation:"Maintain",notes:"Very important and relevant indicator.",overlap:["TEC3"],overlapNote:"Overlaps with TEC3 (broadband/fiber) — in countries where 4G fixed wireless serves as broadband, respondents may conflate the two"},
+{id:"TEC3",domain:"Technology",yes:70,no:24,skip:7,total:101,text:"In my country, internet service providers have signed agreements to adopt hardware or technical specifications for Wi-Fi or fiber optic/broadband networks that are produced or developed by PRC enterprises.",recommendation:"Maintain with clarification",notes:"Excellent complement to T2. Correctly separated from mobile networks, but still some confusion is possible. Some respondents may mix this with T2. This explains the slightly higher skip. I suggest to clarify in the additional remarks: This indicator refers to agreements involving fixed-line internet infrastructure, such as Wi-Fi systems, fiber-optic networks, or broadband services. It applies when",overlap:["TEC2"],overlapNote:"Overlaps with TEC2 (4G/5G) — distinction is cellular vs. fixed-line infrastructure; high skip rate may reflect this confusion"},
+{id:"TEC4",domain:"Technology",yes:78,no:21,skip:2,total:101,text:"In my country, PRC-connected entities are authorized to supply tech-related equipment for critical infrastructure (such as airports, public transport, government IT networks, ports etc.).",recommendation:"Maintain",notes:"Very strong indicator. High strategic relevance. Easy to defend."},
+{id:"TEC5",domain:"Technology",yes:41,no:57,skip:3,total:101,text:"In my country, the central or local government has signed agreements to adopt biometric surveillance technology (such as facial, voice, DNA or gait recognition) produced by PRC-connected entities.",recommendation:"Maintain",notes:"High policy importance. Still sensitive, but evidence is usually public."},
+{id:"TEC6",domain:"Technology",yes:50,no:49,skip:2,total:101,text:"In my country, one or more cities have procured, or have signed contracts with PRC-connected entities to establish “smart city” systems.",recommendation:"Maintain with clarification",notes:"Good indicator, but some confusion might occure between PRC-built systems vs. mixed-vendor projects. I propose to include a clarification at the additional remarks: This indicator applies when PRC-connected entities are involved in establishing a city's smart city system, meaning they are responsible for the design, integration, or operation of the main platform or system. Examples include city-wi"},
+{id:"TEC7",domain:"Technology",yes:39,no:62,skip:0,total:101,text:"My country is directly served by a subsea or land-based major fiber optic internet cable built by a PRC-connected entity, or has greenlit plans for one to be built in the future.",recommendation:"Maintain",notes:"Very relevant and easy to verify via public announcements."},
+{id:"TEC8",domain:"Technology",yes:52,no:45,skip:4,total:101,text:"In my country, PRC-affiliated venture capital, financial firms or PRC government entities invest in local technology start-ups.",recommendation:"Maintain with clarification",notes:"Respondents sometimes include private investors. I think we should add a remark to guide the respondents: For this indicator, \"PRC-affiliated\" refers to venture capital firms, financial institutions, or investment entities that are owned, controlled, or significantly backed by the PRC state, including state-owned enterprises, state-backed funds, or major PRC companies with close government ties. I"},
+{id:"TEC9",domain:"Technology",yes:61,no:40,skip:0,total:101,text:"In my country, companies have publicly announced that they had signed MOUs to collaborate on technological development (such as collaborations in A.I., Blockchain, Cloud Computing, Big Data) with PRC-connected entities.",recommendation:"Maintain",notes:"Very current and up to date."},
+{id:"TEC10",domain:"Technology",yes:35,no:65,skip:1,total:101,text:"My country has signed space cooperation agreements or memorandums of understanding, or formed space cooperation mechanisms with PRC-connected entities.",recommendation:"Maintain",notes:"Clear scope. Good policy relevance."},
+{id:"TEC11",domain:"Technology",yes:28,no:72,skip:1,total:101,text:"In my country, the central or local government(s) has collaborated with the PRC on endorsing the use of BeiDou satellite navigation system. [See Additional Remark]",recommendation:"Maintain",notes:"Strong strategic signal. Narrow but important. Clear government-level decision. Existing additional remarks can be clearer and more professional: If there are only ongoing discussions about adopting the BeiDou satellite navigation system, but no signed agreement or formal endorsement, the answer should remain \"No.\""},
+{id:"SOC1",domain:"Society",yes:52,no:47,skip:2,total:101,text:"In my country, there are local groups or organizations with words like “Promotion of Peaceful Reunification” in their name, and they regularly publicize their views on Taiwan, Hong Kong, Tibet and Xinjiang issues.",recommendation:"Maintain",notes:"Clear UFWD-style proxy. Good mix of frequency + narrative alignment. Still very relevant."},
+{id:"SOC2",domain:"Society",yes:22,no:78,skip:1,total:101,text:"In my country, there are members and member organizations of United World Chinese Association (世界华人协会).",recommendation:"Maintain",notes:"Still relevant."},
+{id:"SOC3",domain:"Society",yes:23,no:76,skip:2,total:101,text:"In my country, labor unions have engaged with the All-China Federation of Trade Unions (ACFTU) through exchanges or official visits, received material or financial donations, or participated in training sessions offered by the ACFTU on subjects like collective bargaining.",recommendation:"Maintain",notes:"Captures labor diplomacy well."},
+{id:"SOC4",domain:"Society",yes:73,no:28,skip:0,total:101,text:"In my country, there are Chinese diaspora community events and activities (e.g. Lunar New Year events, Dragon Boat Festival tournaments, etc) hosted or sponsored by organizations or personnel linked to the UFWD, or by PRC diplomats.",recommendation:"Maintain with clarification",notes:"Clear influence logic. Good balance of system + case evidence. Respondents may mix S4 and S9 up without guidance. We should add an additional remark here: This indicator focuses on events and activities organized or sponsored by PRC diplomatic missions or UFWD-linked actors, especially where community engagement is connected to political narratives (e.g. Taiwan, Hong Kong, Tibet, Xinjiang). If an "},
+{id:"SOC5",domain:"Society",yes:64,no:35,skip:2,total:101,text:"In my country, there are PRC-connected professional associations, such as the All-China Journalists Association (中华全国新闻工作者协会), China Artists Association (中国艺术家协会), China Writers Association (中国作家协会) or All-China Women Federation (全国妇联), that are closely engaged with their local counterparts through exchanges or official visits, providing material or financial donations, or hosting training sessions.",recommendation:"Maintain",notes:"Good sectoral coverage (journalists, artists, writers, women's federation). Clear engagement modes listed."},
+{id:"SOC6",domain:"Society",yes:50,no:49,skip:2,total:101,text:"In my country, PRC-connected individuals or entities donate money or provide other types of support to religious communities and charities.",recommendation:"Maintain with clarification",notes:"Important but some countries may find evidence hard to document. Might need to clarify what \"PRC-connected\" means in remarks to avoid counting general Chinese philanthropy: This indicator applies only to donations or support provided by PRC-connected individuals or entities, such as PRC government bodies, PRC embassies or consulates, United Front–linked organizations, or clearly PRC-affiliated com"},
+{id:"SOC7",domain:"Society",yes:59,no:40,skip:2,total:101,text:"In my country, the PRC government or PRC-connected entities distribute entertainment products (including: drama and TV shows) or related hardwares (e.g. OTT streaming players hosting PRC media channels) freely or at a cheap price.",recommendation:"Maintain with clarification",notes:"Still relevant, important in documenting soft-power logic. This one is hard to justify as it sits right at the line between normal cultural exchange and state-linked influence. I suggest to add a clean additional remarks line: This indicator applies only when entertainment content or related hardware is provided free of charge or at a subsidized rate by PRC-connected entities. This includes, for e"},
+{id:"SOC8",domain:"Society",yes:66,no:35,skip:0,total:101,text:"In my country, PRC-connected entities are the main shareholders or developers of the top five popular social media/messaging apps, based on their usage. [See Additional Remark]",recommendation:"Maintain",notes:"Very important indicator. Existing additional remarks can be improved: This indicator measures actual usage, not just download numbers. Respondents should rely on publicly available usage data where possible (such as active users, market share, or audience reach). If reliable usage data is not available, download numbers may be used only as supporting evidence, and this limitation should be noted "},
+{id:"SOC9",domain:"Society",yes:84,no:15,skip:2,total:101,text:"In my country, there are cultural events, cultural exchange projects, or cultural organizations that are funded by or receive funding from PRC-connected entities, including in sports.",recommendation:"Maintain with clarification",notes:"Respondents may mix S9 and S4 up without guidance. We should add an additional remark here: This indicator focuses on financial or institutional support from PRC-connected entities for cultural, social, or sports activities. If an event is primarily organized by embassies or UFWD-linked actors for political or narrative purposes, consider Indicator S4 instead."},
+{id:"SOC10",domain:"Society",yes:5,no:96,skip:0,total:101,text:"In my country, gamers, gaming communities, or game developers/publishers have been involved in freedom of speech controversies related to the PRC.",recommendation:"Maintain with clarification",notes:"Although very rare, this indicator tracks spillover of political pressure into entertainment. It captures self-censorship driven by PRC market power. One problem I observed is, respondents probably think: I've never seen this, it's too niche etc. We do not want to keep updating indicators, as yoy comparison is crucial to us. We can try to stregthen this indicator by adding a clear guide in the add"},
+{id:"SOC11",domain:"Society",yes:39,no:54,skip:8,total:101,text:"In my country, polling data or opinion surveys indicate that a majority of citizens hold favorable views toward the PRC government.",recommendation:"Maintain with clarification",notes:"High skip rate. We need to clarify in the additional remarks that if no polling exists, answer \"Skip\" to prevent some respondents answer \"No\" instead. This indicator must be based on credible and publicly available polling data or opinion surveys that measure public views of the PRC government. National surveys are preferred. If national data is not available, reputable international or regional s"},
+{id:"LAW1",domain:"Law Enforcement",yes:67,no:34,skip:0,total:101,text:"My country currently maintains an extradition treaty, legal mutual assistance or other similar arrangements with the PRC.",recommendation:"Maintain",notes:"Very clear and easy to verify indicator."},
+{id:"LAW2",domain:"Law Enforcement",yes:37,no:63,skip:1,total:101,text:"In my country, law enforcement authorities have signed cooperation agreements with the PRC on combatting terrorism.",recommendation:"Maintain",notes:"Very clear, relevant, and easy to verify indicator."},
+{id:"LAW3",domain:"Law Enforcement",yes:38,no:61,skip:2,total:101,text:"In my country, PRC-connected gangs (such as Triad, 三合会) are known to be operating in my country.",recommendation:"Maintain with clarification",notes:"Maintain, but keep evidence threshold clear. Suggested additional remarks: This indicator applies only to organized criminal groups that have documented links to PRC-connected individuals, entities, or state interests. Do not include general organized crime involving Chinese nationals unless there is credible public reporting, court records, or official investigations showing a connection to PRC-l"},
+{id:"LAW4",domain:"Law Enforcement",yes:13,no:86,skip:2,total:101,text:"In my country, security services (安保/保安) offered by private PRC companies are contracted by national or subnational governments.",recommendation:"Maintain",notes:"Clear, meaningful, and relevant indicator."},
+{id:"LAW5",domain:"Law Enforcement",yes:41,no:59,skip:1,total:101,text:"In my country, law enforcement and judicial-related training offered by PRC-connected individuals or entities have been accepted by national or subnational governments.",recommendation:"Maintain",notes:"Clear, observable, and relevant indicator."},
+{id:"LAW6",domain:"Law Enforcement",yes:9,no:92,skip:0,total:101,text:"In my country, organized local criminal groups are known to have threatened or used violence to coerce, intimidate, or punish individuals critical of the PRC.",recommendation:"Maintain",notes:"Important indicator."},
+{id:"LAW7",domain:"Law Enforcement",yes:46,no:52,skip:3,total:101,text:"In my country, there are reports of cyber attacks targeting government, critical infrastructure, or enterprises that were suspected to be initiated from the PRC.",recommendation:"Maintain",notes:"Very current and important indicator."},
+{id:"LAW8",domain:"Law Enforcement",yes:26,no:70,skip:5,total:101,text:"In my country, PRC-connected individuals or entities have established extra-legal physical premises from which to surveil or detain members of the Chinese diaspora (e.g. overseas police service stations).",recommendation:"Maintain",notes:"The existing additional remarks is unclear and informal. Propose to revise to: This indicator applies only when there is credible evidence that PRC-connected individuals or entities have established extra-legal physical premises used to monitor, intimidate, or detain members of the Chinese diaspora. If a country only has plans for, or discussions about, police cooperation or joint patrols with PRC"},
+{id:"LAW9",domain:"Law Enforcement",yes:12,no:89,skip:0,total:101,text:"My government has arbitrarily detained people at the behest of the PRC, such as those who engage in political activism or those who are members of minority groups.",recommendation:"Maintain",notes:"Important indicator."},
+{id:"LAW10",domain:"Law Enforcement",yes:14,no:87,skip:0,total:101,text:"My country has extradited or deported individuals to the PRC despite criticism from politicians, government employees, or NGOs.",recommendation:"Maintain",notes:"Clear, and easy to verify via public cases."},
+{id:"LAW11",domain:"Law Enforcement",yes:63,no:34,skip:4,total:101,text:"My country has deployed video or internet surveillance systems from the PRC for law enforcement.",recommendation:"Maintain",notes:"Very current and highly relevant."}
+];
+function getFlags(r) {
+  var yp=Math.round(r.yes/r.total*100), np=Math.round(r.no/r.total*100), sp=Math.round(r.skip/r.total*100);
+  var flags=[];
+  if(yp>=80) flags.push({key:'one-sided-yes',label:'One-sided Yes'});
+  if(np>=80) flags.push({key:'one-sided-no',label:'One-sided No'});
+  if(sp>3)   flags.push({key:'high-skip',label:'High skip'});
+  if(r.overlap) flags.push({key:'overlap',label:'Overlaps: '+r.overlap.join(', ')});
+  return flags;
+}
+function recommendationTag(v) {
+  if(!v) return '';
+  if(v==='Consider removing')      return '<span class="recommendation-tag v-remove">Consider removing</span>';
+  if(v==='Consider consolidating') return '<span class="recommendation-tag v-consolidate">Consider consolidating</span>';
+  if(v==='Flag for committee')     return '<span class="recommendation-tag v-flag">Flag for committee</span>';
+  if(v.indexOf('clarification')>=0) return '<span class="recommendation-tag v-clarify">Needs clarification</span>';
+  return '<span class="recommendation-tag v-maintain">Maintain</span>';
+}
+function barHtml(r) {
+  var yp=Math.round(r.yes/r.total*100), np=Math.round(r.no/r.total*100), sp=Math.round(r.skip/r.total*100), sc=0.9;
+  var skipBar=sp>0?'<div class="bar bar-skip-el" style="width:'+Math.max(sp*sc*2,2)+'px;"></div>':'';
+  var bars='<div class="bar bar-yes-el" style="width:'+Math.max(yp*sc,yp>0?2:0)+'px;"></div>'
+          +'<div class="bar bar-no-el" style="width:'+Math.max(np*sc,np>0?2:0)+'px;"></div>'+skipBar;
+  if(np>=80) return '<div class="bar-wrap">'+bars+'<span class="bar-pct">'+r.no+' <span style="color:var(--text-faint);font-weight:300;">('+np+'%)</span></span></div>';
+  return '<div class="bar-wrap"><span class="bar-pct" style="min-width:48px;text-align:right;">'+r.yes+' <span style="color:var(--text-faint);font-weight:300;">('+yp+'%)</span></span>'+bars+'</div>';
+}
+function tagsHtml(flags) {
+  if(!flags.length) return '<span style="color:#aaa;font-size:12px;">-</span>';
+  return '<div class="tags">'+flags.map(function(f){return '<span class="tag tag-'+f.key+'">'+f.label+'</span>';}).join('')+'</div>';
+}
+function shortText(t) {
+  var dot=t.indexOf('.');
+  if(dot>0&&dot<120) return t.substring(0,dot+1);
+  return t.length>110?t.substring(0,110)+'...':t;
+}
+var sortCol='yes', sortDir=-1;
+var data=rows.map(function(r){return Object.assign({},r,{flags:getFlags(r)});});
+function render() {
+  var domain=document.getElementById('fDomain').value;
+  var recommendation=document.getElementById('fRecommendation').value;
+  var flag=document.getElementById('fFlag').value;
+  var search=document.getElementById('fSearch').value.toLowerCase();
+  var filtered=data.filter(function(r){
+    if(domain&&r.domain!==domain) return false;
+    if(recommendation&&r.recommendation!==recommendation) return false;
+    if(flag&&!r.flags.some(function(f){return f.key===flag;})) return false;
+    if(search&&r.id.toLowerCase().indexOf(search)<0&&r.text.toLowerCase().indexOf(search)<0&&r.domain.toLowerCase().indexOf(search)<0&&(r.notes||'').toLowerCase().indexOf(search)<0) return false;
+    return true;
+  });
+  filtered.sort(function(a,b){
+    var av,bv;
+    if(sortCol==='id') return a.id<b.id?-sortDir:sortDir;
+    if(sortCol==='recommendation') return a.recommendation<b.recommendation?-sortDir:sortDir;
+    if(sortCol==='yes'){av=a.yes/a.total;bv=b.yes/b.total;}
+    else if(sortCol==='skip'){av=a.skip/a.total;bv=b.skip/b.total;}
+    else if(sortCol==='flags'){av=a.flags.length;bv=b.flags.length;}
+    else{av=0;bv=0;}
+    return (av-bv)*sortDir;
+  });
+  document.getElementById('resultsCount').textContent=filtered.length+' indicator'+(filtered.length!==1?'s':'');
+  if(!filtered.length){
+    document.getElementById('tbody').innerHTML='<tr><td colspan="6"><div class="empty-state"><span>0</span>No indicators match your filters.</div></td></tr>';
+    return;
+  }
+  document.getElementById('tbody').innerHTML=filtered.map(function(r){
+    var overlapNote=r.overlapNote?'<span class="overlap-note">'+r.overlapNote+'</span>':'';
+    var notesHtml=r.notes?'<div class="detail-label">Assessment notes</div><div class="notes-block">'+r.notes+'</div>':'';
+    var overlapHtml=r.overlapNote?'<div class="detail-label">Overlap note</div><div class="notes-block" style="border-color:var(--purple);color:var(--purple);">'+r.overlapNote+'</div>':'';
+    var mainRow='<tr class="data-row" onclick="toggleDetail(\'' + r.id + '\')">'
+      +'<td><div class="ind-id">'+r.id+'</div><div class="domain-badge">'+r.domain+'</div>'
+      +'<button class="expand-btn" id="btn-'+r.id+'">+ expand</button></td>'
+      +'<td>'+barHtml(r)+'</td>'
+      +'<td><span class="skip-pct">'+r.skip+' <span style="color:var(--text-faint);font-weight:300;">('+Math.round(r.skip/r.total*100)+'%)</span></span></td>'
+      +'<td>'+recommendationTag(r.recommendation)+'</td>'
+      +'<td>'+tagsHtml(r.flags)+'</td>'
+      +'<td class="ind-text">'+shortText(r.text)+overlapNote+'</td>'
+      +'</tr>';
+    var detailRow='<tr class="detail-row" id="detail-'+r.id+'">'
+      +'<td colspan="6">'
+      +'<div class="detail-label">Full indicator wording</div>'
+      +'<div class="ind-text-full">'+r.text+'</div>'
+      +notesHtml+overlapHtml
+      +'</td></tr>';
+    return mainRow+detailRow;
+  }).join('');
+}
+function toggleDetail(id){
+  var row=document.getElementById('detail-'+id);
+  var btn=document.getElementById('btn-'+id);
+  var isOpen=row.classList.contains('open');
+  row.classList.toggle('open',!isOpen);
+  if(btn) btn.textContent=isOpen?'+ expand':'- collapse';
+}
+document.getElementById('fDomain').addEventListener('change',render);
+document.getElementById('fRecommendation').addEventListener('change',render);
+document.getElementById('fFlag').addEventListener('change',render);
+document.getElementById('fSearch').addEventListener('input',render);
+document.querySelectorAll('th[data-col]').forEach(function(th){
+  th.addEventListener('click',function(){
+    var col=th.dataset.col;
+    if(sortCol===col) sortDir*=-1; else{sortCol=col;sortDir=-1;}
+    document.querySelectorAll('th').forEach(function(t){t.classList.remove('sort-asc','sort-desc');});
+    th.classList.add(sortDir===-1?'sort-desc':'sort-asc');
+    render();
+  });
+});
+render();
+</script>
+</body>
+</html>
